@@ -15,7 +15,7 @@ io.on('connection', (socket) => {
         io.emit('chat message', 'AI: Waiting for response...');
 
         try {
-            const response = await axios.post('http://localhost:1234/v1/chat/completions', {
+            const response = await axios.post('http://192.168.1.160:1234/v1/chat/completions', {
                 messages: [
                     { role: 'system', content: 'Always answer in rhymes.' },
                     { role: 'user', content: msg }
