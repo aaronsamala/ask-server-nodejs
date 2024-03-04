@@ -16,6 +16,7 @@
             const socket = io();
             const form = document.getElementById('form');
             const input = document.getElementById('input');
+            const button = form.querySelector('button'); // Get the button element
             const messages = document.getElementById('messages');
             let lastItem = null;
             let lastRole = null;
@@ -26,10 +27,18 @@
                     console.log(`User input: ${input.value}`);
                     socket.emit('chat message', input.value);
                     input.value = '';
+                    input.disabled = true; // Disable the input
+                    button.disabled = true; // Disable the button
                 }
             });
 
             socket.on('chat message', function(msg) {
+                if (msg.role === 'system' && msg.content === 'AI: Response finished.') { // If this is the end message
+                    input.disabled = false; // Enable the input
+                    button.disabled = false; // Enable the button
+                    return; // Don't create a new message
+                }
+
                 if (lastRole !== msg.role || msg.role !== 'assistant') { // New message starts
                     lastItem = document.createElement('li');
                     messages.appendChild(lastItem);

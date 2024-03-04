@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
                             }
                             if (data.choices && data.choices[0] && data.choices[0].delta && data.choices[0].delta.content) {
                                 io.emit('chat message', {
-                                    role: 'assistant', // Add this line
+                                    role: 'assistant',
                                     content: `AI: ${data.choices[0].delta.content}`,
                                     isLastChunk: data.choices[0].delta.finish_reason === 'stop'
                                 });
@@ -74,7 +74,7 @@ io.on('connection', (socket) => {
             });
 
             response.data.on('end', () => {
-                // io.emit('chat message', { role: 'assistant', content: 'AI: End of response.' });
+                io.emit('chat message', { role: 'system', content: 'AI: Response finished.' });
             });
         } catch (error) {
             console.error(error);
