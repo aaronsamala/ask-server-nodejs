@@ -37,73 +37,7 @@
             </div>  
         </div>
         <script src="/socket.io/socket.io.js"></script>
-        <script>
-            const socket = io();
-            // const form = document.getElementById('form');
-            //const input = document.getElementById('input-field');
-            // const button = form.querySelector('button'); // Get the button element
-            const messages = document.getElementById('messages');
-            const chatbot = document.getElementById('chatbot');
-            const conversation = document.getElementById('conversation');
-            const inputForm = document.getElementById('input-form');
-            const inputField = document.getElementById('input-field');
-            let lastItem = null;
-            let lastRole = null;
-
-            inputForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                if (inputField.value) {
-                    // Get user input
-                    const input = inputField.value;
-                    console.log(`User input: ${input}`);
-
-                    // Clear input field
-                    inputField.value = '';
-                    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: "2-digit" });
-
-                    // Add user input to conversation
-                    let message = document.createElement('div');
-                    message.classList.add('chatbot-message', 'user-message');
-                    message.innerHTML = `<p class="chatbot-text" sentTime="${currentTime}">${input}</p>`;
-                    conversation.appendChild(message);
-
-                    console.log(`User input: ${input}`);
-                    socket.emit('chat message', input);
-                    //inputField = '';
-                    inputField.disabled = true; // Disable the input
-                    // button.disabled = true; // Disable the button
-                }
-            });
-
-            let newResponse = true;
-
-            socket.on('chat message', function(msg) {
-                const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: "2-digit" });
-                if (msg.role === 'system' && msg.content === 'AI: Response finished.') { // If this is the end message
-                    inputField.disabled = false; // Enable the input
-                    // button.disabled = false; // Enable the button
-                    newResponse = true; // Set the flag to true for the next response
-                    return; // Don't create a new message
-                }
-
-                if (lastRole !== msg.role || (lastRole === 'assistant' && msg.role === 'assistant' && newResponse)) { // New message starts
-                    lastItem = document.createElement('div');
-                    conversation.appendChild(lastItem);
-
-                    message = document.createElement('div');
-                    message.classList.add('chatbot-message', msg.role === 'assistant' ? 'chatbot' : 'user-message');
-                    message.innerHTML = `<p class="chatbot-text" sentTime="${currentTime}">${msg.role === 'assistant' ? 'AI: ' : ''}</p>`;
-                    conversation.appendChild(message);
-                    message.scrollIntoView({behavior: "smooth"});
-                    newResponse = false; // Reset the flag
-                }
-
-                const lastChatbotMessage = conversation.querySelector('.chatbot-message:last-child');
-                lastChatbotMessage.querySelector('.chatbot-text').textContent += msg.content.replace(/^AI: /, '');
-                lastRole = msg.role;
-
-                window.scrollTo(0, document.body.scrollHeight);
-            });
-        </script>
+        <script src="https://cdn.jsdelivr.net/npm/marked@1.2.9/lib/marked.js"></script>
+        <script src="chatbot.js" defer></script>
     </body>
 </html>
