@@ -2,51 +2,104 @@
 <html>
     <head>
         <title>Chat</title>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="style.css">
         <style>
             /* Add your CSS here */
         </style>
     </head>
     <body>
-        <ul id="messages"></ul>
+        <!-- <ul id="messages"></ul>
         <form id="form" action="">
             <input id="input" autocomplete="off" /><button>Send</button>
-        </form>
+        </form> -->
+        <div class="chatbot-container">
+            <div id="header">
+                <h1>Chatbot</h1>
+            </div>
+            <div id="chatbot">
+                <div id="conversation">
+                  <div class="chatbot-message">
+                    <p class="chatbot-text">Hi! 👋 it''s great to see you!</p>
+                  </div>
+                </div>
+                <form id="input-form">
+                  <message-container>
+                    <input id="input-field" type="text" placeholder="Type your message here">
+                    <button id="submit-button" type="submit">
+                      <img class="send-icon" src="send-message.png" alt="">
+                    </button>
+                  </message-container>
+                    
+                </form>
+            </div>  
+        </div>
         <script src="/socket.io/socket.io.js"></script>
         <script>
             const socket = io();
-            const form = document.getElementById('form');
-            const input = document.getElementById('input');
-            const button = form.querySelector('button'); // Get the button element
+            // const form = document.getElementById('form');
+            //const input = document.getElementById('input-field');
+            // const button = form.querySelector('button'); // Get the button element
             const messages = document.getElementById('messages');
+            const chatbot = document.getElementById('chatbot');
+            const conversation = document.getElementById('conversation');
+            const inputForm = document.getElementById('input-form');
+            const inputField = document.getElementById('input-field');
             let lastItem = null;
             let lastRole = null;
 
-            form.addEventListener('submit', function(e) {
+            inputForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                if (input.value) {
-                    console.log(`User input: ${input.value}`);
-                    socket.emit('chat message', input.value);
-                    input.value = '';
-                    input.disabled = true; // Disable the input
-                    button.disabled = true; // Disable the button
+                if (inputField.value) {
+                    // Get user input
+                    const input = inputField.value;
+                    console.log(`User input: ${input}`);
+
+                    // Clear input field
+                    inputField.value = '';
+                    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: "2-digit" });
+
+                    // Add user input to conversation
+                    let message = document.createElement('div');
+                    message.classList.add('chatbot-message', 'user-message');
+                    message.innerHTML = `<p class="chatbot-text" sentTime="${currentTime}">${input}</p>`;
+                    conversation.appendChild(message);
+
+                    console.log(`User input: ${input}`);
+                    socket.emit('chat message', input);
+                    //inputField = '';
+                    inputField.disabled = true; // Disable the input
+                    // button.disabled = true; // Disable the button
                 }
             });
 
+            let newResponse = true;
+
             socket.on('chat message', function(msg) {
+                const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: "2-digit" });
                 if (msg.role === 'system' && msg.content === 'AI: Response finished.') { // If this is the end message
-                    input.disabled = false; // Enable the input
-                    button.disabled = false; // Enable the button
+                    inputField.disabled = false; // Enable the input
+                    // button.disabled = false; // Enable the button
+                    newResponse = true; // Set the flag to true for the next response
                     return; // Don't create a new message
                 }
 
-                if (lastRole !== msg.role || msg.role !== 'assistant') { // New message starts
-                    lastItem = document.createElement('li');
-                    messages.appendChild(lastItem);
-                    lastItem.textContent = msg.role === 'assistant' ? 'AI: ' : ''; // Add the prefix here
+                if (lastRole !== msg.role || (lastRole === 'assistant' && msg.role === 'assistant' && newResponse)) { // New message starts
+                    lastItem = document.createElement('div');
+                    conversation.appendChild(lastItem);
+
+                    message = document.createElement('div');
+                    message.classList.add('chatbot-message', msg.role === 'assistant' ? 'chatbot' : 'user-message');
+                    message.innerHTML = `<p class="chatbot-text" sentTime="${currentTime}">${msg.role === 'assistant' ? 'AI: ' : ''}</p>`;
+                    conversation.appendChild(message);
+                    message.scrollIntoView({behavior: "smooth"});
+                    newResponse = false; // Reset the flag
                 }
 
-                // Append the chunk to the last list item
-                lastItem.textContent += msg.content.replace(/^AI: /, ''); // Remove the prefix from the chunk
+                const lastChatbotMessage = conversation.querySelector('.chatbot-message:last-child');
+                lastChatbotMessage.querySelector('.chatbot-text').textContent += msg.content.replace(/^AI: /, '');
                 lastRole = msg.role;
 
                 window.scrollTo(0, document.body.scrollHeight);

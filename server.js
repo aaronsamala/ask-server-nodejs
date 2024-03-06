@@ -11,7 +11,7 @@ app.use(express.static('public'));
 
 io.on('connection', (socket) => {
     socket.on('chat message', async (msg) => {
-        io.emit('chat message', { role: 'user', content: `You: ${msg}` });
+        // io.emit('chat message', { role: 'user', content: `You: ${msg}` });
         // io.emit('chat message', { role: 'assistant', content: 'AI: Waiting for response...' });
 
         try {
